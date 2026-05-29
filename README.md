@@ -71,6 +71,7 @@ ADMIN_USERNAME=admin
 ADMIN_PASSWORD=
 BASE_URL=http://127.0.0.1:5000
 DATABASE_URL=
+DATABASE_SSLMODE=
 FLASK_DEBUG=0
 SCHEDULER_ENABLED=1
 ALLOW_PRIVATE_URLS=0
@@ -88,6 +89,7 @@ SMTP_FROM=
 - `ADMIN_PASSWORD`: 管理画面Basic認証のパスワードです。設定した場合、管理画面に認証がかかります。
 - `BASE_URL`: 通知内の公開ステータスページURLに使います。例: `https://kanshi.example.com`
 - `DATABASE_URL`: 本番DB接続URL。未設定なら `sqlite:///kanshi.db` を使います。
+- `DATABASE_SSLMODE`: 必要な場合だけPostgreSQL接続のSSLモードを指定します。RenderのExternal Database URLを使う場合は `require` を試してください。Internal Database URLでは通常は空欄でOKです。
 - `FLASK_DEBUG`: 本番では `0` にしてください。未設定時も `0` 扱いです。
 - `SCHEDULER_ENABLED`: `1` ならAPSchedulerを起動します。WebとWorkerを分ける場合は制御に使えます。
 - `ALLOW_PRIVATE_URLS`: `1` の場合のみlocalhostやprivate IPの監視URLを許可します。本番では `0` 推奨です。
@@ -105,6 +107,7 @@ Renderなどで `postgres://...` が渡される場合も、アプリ側で `pos
 
 ```env
 DATABASE_URL=postgresql://user:password@host:5432/database
+DATABASE_SSLMODE=
 BASE_URL=https://your-kanshi.onrender.com
 ```
 
@@ -175,6 +178,7 @@ ADMIN_USERNAME=admin
 ADMIN_PASSWORD=管理画面用の長いパスワード
 BASE_URL=https://your-kanshi.onrender.com
 DATABASE_URL=Render PostgreSQLのExternal Database URLまたはInternal Database URL
+DATABASE_SSLMODE=
 FLASK_DEBUG=0
 SCHEDULER_ENABLED=1
 ALLOW_PRIVATE_URLS=0

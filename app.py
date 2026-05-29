@@ -3,7 +3,7 @@ import re
 import secrets
 import unicodedata
 from datetime import timedelta
-from urllib.parse import urlparse
+from urllib.parse import parse_qsl, urlencode, urlparse, urlunparse
 
 from dotenv import load_dotenv
 from flask import Flask, Response, abort, flash, redirect, render_template, request, session, url_for
@@ -22,13 +22,32 @@ def database_url():
     if not url:
         return "sqlite:///kanshi.db"
     if url.startswith("postgres://"):
-        return url.replace("postgres://", "postgresql://", 1)
+        url = url.replace("postgres://", "postgresql://", 1)
+
+    sslmode = os.environ.get("DATABASE_SSLMODE")
+    if sslmode and url.startswith("postgresql://"):
+        parsed = urlparse(url)
+        query = dict(parse_qsl(parsed.query, keep_blank_values=True))
+        query.setdefault("sslmode", sslmode)
+        url = urlunparse(parsed._replace(query=urlencode(query)))
     return url
+
+
+def database_engine_options(url):
+    if not url.startswith("postgresql://"):
+        return {}
+    return {
+        "pool_pre_ping": True,
+        "pool_recycle": 300,
+        "pool_timeout": 30,
+    }
 
 
 app = Flask(__name__)
 app.config["SECRET_KEY"] = os.environ.get("SECRET_KEY", "kanshi-dev-secret")
-app.config["SQLALCHEMY_DATABASE_URI"] = database_url()
+DATABASE_URI = database_url()
+app.config["SQLALCHEMY_DATABASE_URI"] = DATABASE_URI
+app.config["SQLALCHEMY_ENGINE_OPTIONS"] = database_engine_options(DATABASE_URI)
 app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = False
 DEBUG = os.environ.get("FLASK_DEBUG", "0").lower() in ("1", "true", "yes")
 app.config["DEBUG"] = DEBUG
