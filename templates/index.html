@@ -1,0 +1,142 @@
+{% extends "base.html" %}
+{% block title %}ダッシュボード | kanshi{% endblock %}
+{% block content %}
+<div class="mb-8 flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
+  <div>
+    <h1 class="text-2xl font-semibold tracking-tight">監視ダッシュボード</h1>
+    <p class="mt-2 text-sm text-slate-600">登録したURLの現在状態、応答時間、稼働率を確認できます。</p>
+  </div>
+</div>
+
+<section class="mb-6 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+  <div class="rounded-lg border border-slate-200 bg-white p-5">
+    <div class="text-sm font-medium text-slate-500">監視中のURL数</div>
+    <div class="mt-3 text-2xl font-semibold">{{ summary.total }}</div>
+  </div>
+  <div class="rounded-lg border border-slate-200 bg-white p-5">
+    <div class="text-sm font-medium text-slate-500">正常稼働中</div>
+    <div class="mt-3 text-2xl font-semibold text-green-700">{{ summary.up }}</div>
+  </div>
+  <div class="rounded-lg border border-slate-200 bg-white p-5">
+    <div class="text-sm font-medium text-slate-500">障害中</div>
+    <div class="mt-3 text-2xl font-semibold text-red-700">{{ summary.down }}</div>
+  </div>
+  <div class="rounded-lg border border-slate-200 bg-white p-5">
+    <div class="text-sm font-medium text-slate-500">平均応答時間</div>
+    <div class="mt-3 text-2xl font-semibold">{{ summary.average_response_time ~ " ms" if summary.average_response_time is not none else "- ms" }}</div>
+  </div>
+</section>
+
+{% if not items %}
+  <section class="rounded-lg border border-dashed border-slate-300 bg-white p-8 text-center">
+    <h2 class="text-lg font-semibold">まだ監視URLがありません</h2>
+    <p class="mt-2 text-sm text-slate-600">最初のサービスURLを登録すると、60秒ごとに自動チェックされます。</p>
+    <a href="{{ url_for('add_monitor') }}" class="mt-5 inline-flex rounded-md bg-slate-900 px-4 py-2 text-sm font-medium text-white hover:bg-slate-700">監視を追加する</a>
+  </section>
+{% else %}
+  <div class="overflow-hidden rounded-lg border border-slate-200 bg-white">
+    <div class="hidden grid-cols-[1.3fr_110px_145px_105px_95px_120px_120px] gap-4 border-b border-slate-200 bg-slate-50 px-5 py-3 text-xs font-medium uppercase tracking-wide text-slate-500 lg:grid">
+      <div>サービス</div>
+      <div>状態</div>
+      <div>最終チェック</div>
+      <div>応答時間</div>
+      <div>稼働率</div>
+      <div>通知方法</div>
+      <div></div>
+    </div>
+    <div class="divide-y divide-slate-200">
+      {% for item in items %}
+        {% set monitor = item.monitor %}
+        <article class="grid gap-4 px-5 py-5 lg:grid-cols-[1.3fr_110px_145px_105px_95px_120px_120px] lg:items-center">
+          <div class="min-w-0">
+            <div class="font-medium">{{ monitor.name }}</div>
+            <a href="{{ monitor.url }}" target="_blank" class="mt-1 block truncate text-sm text-slate-500 hover:text-slate-900">{{ monitor.url }}</a>
+            <a href="{{ url_for('status_page', page_slug=monitor.slug) }}" class="mt-2 inline-block text-sm font-medium text-slate-700 underline decoration-slate-300 underline-offset-4 hover:text-slate-950">公開ステータスページ</a>
+          </div>
+          <div>
+            {% if item.status == "UP" %}
+              <span class="inline-flex rounded-full bg-green-100 px-3 py-1 text-sm font-medium text-green-800">🟢 UP</span>
+            {% elif item.status == "DOWN" %}
+              <span class="inline-flex rounded-full bg-red-100 px-3 py-1 text-sm font-semibold text-red-800 ring-1 ring-red-200">🔴 DOWN</span>
+            {% else %}
+              <span class="inline-flex rounded-full bg-yellow-100 px-3 py-1 text-sm font-medium text-yellow-800">🟡 checking</span>
+            {% endif %}
+          </div>
+          <div class="text-sm text-slate-600">{{ item.latest.checked_at|jst if item.latest else "未チェック" }}</div>
+          <div class="text-sm text-slate-600">{{ item.latest.response_time_ms ~ " ms" if item.latest and item.latest.response_time_ms is not none else "-" }}</div>
+          <div class="text-sm font-medium text-slate-800">{{ item.uptime ~ "%" if item.uptime is not none else "-" }}</div>
+          <div class="text-sm text-slate-600">{{ item.notification_label }}</div>
+          <div class="flex flex-col gap-2">
+            {% if item.status == "DOWN" %}
+              <textarea id="copy-source-{{ monitor.id }}" class="hidden" readonly>{{ item.outage_report }}</textarea>
+              <button type="button" data-copy-target="copy-source-{{ monitor.id }}" class="copy-report rounded-md border border-red-200 bg-red-50 px-3 py-2 text-sm font-medium text-red-700 hover:bg-red-100">報告文をコピー</button>
+              <span class="copy-feedback hidden text-xs text-green-700" aria-live="polite"></span>
+            {% endif %}
+            <form action="{{ url_for('delete_monitor', monitor_id=monitor.id) }}" method="post" onsubmit="return confirm('この監視URLを削除しますか？');">
+              <input type="hidden" name="csrf_token" value="{{ csrf_token_value() }}">
+              <button class="w-full rounded-md border border-slate-300 px-3 py-2 text-sm text-slate-700 hover:bg-slate-50">削除</button>
+            </form>
+          </div>
+        </article>
+      {% endfor %}
+    </div>
+  </div>
+{% endif %}
+
+<script>
+  async function copyTextWithFallback(text) {
+    if (navigator.clipboard && window.isSecureContext) {
+      try {
+        await navigator.clipboard.writeText(text);
+        return true;
+      } catch (error) {
+        // Fall through to textarea fallback.
+      }
+    }
+
+    const textarea = document.createElement("textarea");
+    textarea.value = text;
+    textarea.setAttribute("readonly", "");
+    textarea.style.position = "fixed";
+    textarea.style.top = "-9999px";
+    textarea.style.left = "-9999px";
+    document.body.appendChild(textarea);
+    textarea.focus();
+    textarea.select();
+    textarea.setSelectionRange(0, textarea.value.length);
+
+    let copied = false;
+    try {
+      copied = document.execCommand("copy");
+    } catch (error) {
+      copied = false;
+    } finally {
+      document.body.removeChild(textarea);
+    }
+
+    return copied;
+  }
+
+  document.querySelectorAll(".copy-report").forEach((button) => {
+    button.addEventListener("click", async () => {
+      const feedback = button.parentElement.querySelector(".copy-feedback");
+      const source = document.getElementById(button.dataset.copyTarget);
+      const text = source ? source.value : "";
+      const copied = text ? await copyTextWithFallback(text) : false;
+
+      if (feedback) {
+        feedback.textContent = copied
+          ? "コピーしました"
+          : "コピーできませんでした。手動で選択してコピーしてください。";
+        feedback.classList.toggle("text-green-700", copied);
+        feedback.classList.toggle("text-red-700", !copied);
+        feedback.classList.remove("hidden");
+      }
+
+      if (copied && feedback) {
+        setTimeout(() => feedback.classList.add("hidden"), 1800);
+      }
+    });
+  });
+</script>
+{% endblock %}
