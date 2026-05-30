@@ -8,6 +8,7 @@ from urllib.parse import parse_qsl, urlencode, urlparse, urlunparse
 from dotenv import load_dotenv
 from flask import Flask, Response, abort, flash, redirect, render_template, request, session, url_for
 from sqlalchemy import inspect, text
+from sqlalchemy.exc import OperationalError, ProgrammingError
 
 from models import CheckResult, Incident, Monitor, db, now_jst
 from security import env_enabled, is_monitor_url_allowed
@@ -124,7 +125,7 @@ def unique_slug(name):
     return candidate
 
 
-def validate_monitor_form(name, url):
+def validate_monitor_form(name, url, current_monitor_id=None):
     errors = []
     if not name:
         errors.append("サービス名を入力してください。")
@@ -136,7 +137,10 @@ def validate_monitor_form(name, url):
             errors.append("URLは http:// または https:// から始めてください。")
         elif not is_monitor_url_allowed(url):
             errors.append("localhost、社内ネットワーク、またはDNS解決できないURLは登録できません。")
-        if Monitor.query.filter_by(url=url).first():
+        duplicate_query = Monitor.query.filter_by(url=url)
+        if current_monitor_id is not None:
+            duplicate_query = duplicate_query.filter(Monitor.id != current_monitor_id)
+        if duplicate_query.first():
             errors.append("このURLはすでに登録されています。")
     return errors
 
@@ -161,11 +165,21 @@ def ensure_monitor_columns():
             "enable_email",
             f"ALTER TABLE monitor {add_column} enable_email BOOLEAN NOT NULL DEFAULT {bool_default_false}",
         ),
+        (
+            "is_paused",
+            f"ALTER TABLE monitor {add_column} is_paused BOOLEAN NOT NULL DEFAULT {bool_default_false}",
+        ),
     ]
 
     for column, statement in migrations:
         if column not in existing_columns:
-            db.session.execute(text(statement))
+            try:
+                db.session.execute(text(statement))
+            except (OperationalError, ProgrammingError) as exc:
+                db.session.rollback()
+                message = str(exc).lower()
+                if "duplicate column" not in message and "already exists" not in message:
+                    raise
     db.session.commit()
 
 
@@ -204,7 +218,7 @@ def incident_report(monitor):
 
 def monitor_view_model(monitor):
     latest = monitor.latest_result
-    status = latest.status if latest else "CHECKING"
+    status = "PAUSED" if monitor.is_paused else latest.status if latest else "CHECKING"
     notification_methods = []
     if monitor.enable_discord and monitor.discord_webhook:
         notification_methods.append("Discord")
@@ -300,6 +314,68 @@ def add_monitor():
     return render_template("add.html")
 
 
+@app.route("/edit/<int:monitor_id>", methods=["GET", "POST"])
+def edit_monitor(monitor_id):
+    monitor = Monitor.query.get_or_404(monitor_id)
+
+    if request.method == "POST":
+        validate_csrf()
+        name = request.form.get("name", "").strip()
+        url = request.form.get("url", "").strip()
+        discord_webhook = request.form.get("discord_webhook", "").strip() or None
+        notification_email = request.form.get("notification_email", "").strip() or None
+        enable_discord = request.form.get("enable_discord") == "on"
+        enable_email = request.form.get("enable_email") == "on"
+        errors = validate_monitor_form(name, url, current_monitor_id=monitor.id)
+        if notification_email and "@" not in notification_email:
+            errors.append("通知用メールアドレスの形式を確認してください。")
+
+        if errors:
+            for error in errors:
+                flash(error, "error")
+            return render_template(
+                "edit.html",
+                monitor=monitor,
+                name=name,
+                url=url,
+                discord_webhook=discord_webhook,
+                notification_email=notification_email,
+                enable_discord=enable_discord,
+                enable_email=enable_email,
+            )
+
+        monitor.name = name
+        monitor.url = url
+        monitor.discord_webhook = discord_webhook
+        monitor.notification_email = notification_email
+        monitor.enable_discord = enable_discord
+        monitor.enable_email = enable_email
+        db.session.commit()
+        flash("監視設定を更新しました。", "success")
+        return redirect(url_for("index"))
+
+    return render_template(
+        "edit.html",
+        monitor=monitor,
+        name=monitor.name,
+        url=monitor.url,
+        discord_webhook=monitor.discord_webhook,
+        notification_email=monitor.notification_email,
+        enable_discord=monitor.enable_discord,
+        enable_email=monitor.enable_email,
+    )
+
+
+@app.route("/toggle/<int:monitor_id>", methods=["POST"])
+def toggle_monitor(monitor_id):
+    validate_csrf()
+    monitor = Monitor.query.get_or_404(monitor_id)
+    monitor.is_paused = not monitor.is_paused
+    db.session.commit()
+    flash("監視を再開しました。" if not monitor.is_paused else "監視を一時停止しました。", "success")
+    return redirect(url_for("index"))
+
+
 @app.route("/delete/<int:monitor_id>", methods=["POST"])
 def delete_monitor(monitor_id):
     validate_csrf()
@@ -314,7 +390,7 @@ def delete_monitor(monitor_id):
 def status_page(page_slug):
     monitor = Monitor.query.filter_by(slug=page_slug).first_or_404()
     latest = monitor.latest_result
-    status = latest.status if latest else "CHECKING"
+    status = "PAUSED" if monitor.is_paused else latest.status if latest else "CHECKING"
     incidents = Incident.query.filter_by(monitor_id=monitor.id).order_by(Incident.started_at.desc()).all()
     return render_template(
         "status.html",
@@ -323,7 +399,7 @@ def status_page(page_slug):
         status=status,
         uptime_30d=uptime_percentage(monitor.id, now_jst() - timedelta(days=30)),
         incidents=incidents,
-        report_text=incident_report(monitor),
+        report_text="" if monitor.is_paused else incident_report(monitor),
     )
 
 

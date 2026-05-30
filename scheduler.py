@@ -36,6 +36,10 @@ def ensure_jst(dt):
 
 
 def check_monitor(monitor):
+    if monitor.is_paused:
+        logger.info("Monitor check skipped because paused: %s", monitor.url)
+        return
+
     previous = monitor.latest_result
     previous_status = previous.status if previous else None
     checked_at = now_jst()

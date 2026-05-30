@@ -20,6 +20,7 @@ class Monitor(db.Model):
     notification_email = db.Column(db.String(255), nullable=True)
     enable_discord = db.Column(db.Boolean, default=True, nullable=False)
     enable_email = db.Column(db.Boolean, default=False, nullable=False)
+    is_paused = db.Column(db.Boolean, default=False, nullable=False)
     slug = db.Column(db.String(180), nullable=False, unique=True, index=True)
     created_at = db.Column(db.DateTime(timezone=True), default=now_jst, nullable=False)
 
