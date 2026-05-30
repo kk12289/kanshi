@@ -70,6 +70,9 @@ SECRET_KEY=change-me
 ADMIN_USERNAME=admin
 ADMIN_PASSWORD=
 BASE_URL=http://127.0.0.1:5000
+FEEDBACK_FORM_URL=
+CONTACT_EMAIL=
+DEMO_STATUS_SLUG=
 DATABASE_URL=
 DATABASE_SSLMODE=
 FLASK_DEBUG=0
@@ -90,6 +93,9 @@ SMTP_FROM=
 - `ADMIN_USERNAME`: 管理画面Basic認証のユーザー名です。未設定時は `admin` です。
 - `ADMIN_PASSWORD`: 管理画面Basic認証のパスワードです。設定した場合、管理画面に認証がかかります。
 - `BASE_URL`: 通知内の公開ステータスページURLに使います。例: `https://kanshi.example.com`
+- `FEEDBACK_FORM_URL`: `/beta` の「フィードバックを送る」ボタンのリンク先です。Googleフォームなどを指定できます。
+- `CONTACT_EMAIL`: `FEEDBACK_FORM_URL` が未設定の場合、`mailto:{CONTACT_EMAIL}` としてフィードバック導線に使います。
+- `DEMO_STATUS_SLUG`: `/beta` の「デモ用ステータスページを見る」ボタンで開く `/status/{slug}` のslugです。
 - `DATABASE_URL`: 本番DB接続URL。未設定なら `sqlite:///kanshi.db` を使います。
 - `DATABASE_SSLMODE`: 必要な場合だけPostgreSQL接続のSSLモードを指定します。RenderのExternal Database URLを使う場合は `require` を試してください。Internal Database URLでは通常は空欄でOKです。
 - `FLASK_DEBUG`: 本番では `0` にしてください。未設定時も `0` 扱いです。
@@ -183,6 +189,9 @@ SECRET_KEY=本番用の長いランダム文字列
 ADMIN_USERNAME=admin
 ADMIN_PASSWORD=管理画面用の長いパスワード
 BASE_URL=https://your-kanshi.onrender.com
+FEEDBACK_FORM_URL=
+CONTACT_EMAIL=
+DEMO_STATUS_SLUG=
 DATABASE_URL=Render PostgreSQLのExternal Database URLまたはInternal Database URL
 DATABASE_SSLMODE=
 FLASK_DEBUG=0
@@ -222,6 +231,24 @@ Webアプリと監視Workerを分ける場合は、Web側で `SCHEDULER_ENABLED=
 `ADMIN_PASSWORD` を設定すると、管理画面にBasic認証がかかります。公開ステータスページ `/status/{slug}` は認証なしで表示できます。
 
 β版として外部公開する場合は、必ず `ADMIN_PASSWORD` を設定してください。設定しない場合、誰でも監視URLを追加・削除できます。
+
+## β版紹介ページ
+
+外部のWeb制作者、個人開発者、フリーランスなどにkanshiを紹介する公開ページとして `/beta` を用意しています。
+
+```text
+https://your-kanshi.onrender.com/beta
+```
+
+`/beta` はBasic認証なしで表示できます。外部に意見をもらうときは、管理画面 `/` ではなく `/beta` または個別の公開ステータスページ `/status/{slug}` を共有してください。
+
+フィードバック導線は環境変数で切り替えます。
+
+- `FEEDBACK_FORM_URL` が設定されている場合: 「フィードバックを送る」ボタンのリンク先になります。
+- `FEEDBACK_FORM_URL` が未設定で `CONTACT_EMAIL` が設定されている場合: `mailto:{CONTACT_EMAIL}` を使います。
+- どちらも未設定の場合: フィードバックボタンは「準備中」と表示されます。
+
+デモ用ステータスページへのリンクは `DEMO_STATUS_SLUG` で指定します。例えば `DEMO_STATUS_SLUG=demo` の場合、`/status/demo` へリンクします。未設定の場合、「デモ用ステータスページを見る」ボタンは表示されません。
 
 ## 監視URLを追加する
 

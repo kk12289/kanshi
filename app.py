@@ -83,7 +83,7 @@ def require_admin_auth():
 
 @app.before_request
 def protect_admin_routes():
-    public_endpoints = {"status_page", "static"}
+    public_endpoints = {"beta_page", "status_page", "static"}
     if request.endpoint and request.endpoint not in public_endpoints and not admin_authorized():
         return require_admin_auth()
 
@@ -268,6 +268,29 @@ def index():
     monitors = Monitor.query.order_by(Monitor.created_at.desc()).all()
     items = [monitor_view_model(monitor) for monitor in monitors]
     return render_template("index.html", items=items, summary=dashboard_summary(items))
+
+
+@app.route("/beta")
+def beta_page():
+    feedback_form_url = os.environ.get("FEEDBACK_FORM_URL")
+    contact_email = os.environ.get("CONTACT_EMAIL")
+    demo_status_slug = os.environ.get("DEMO_STATUS_SLUG")
+
+    feedback_url = None
+    if feedback_form_url:
+        feedback_url = feedback_form_url
+    elif contact_email:
+        feedback_url = f"mailto:{contact_email}"
+
+    demo_status_url = None
+    if demo_status_slug:
+        demo_status_url = url_for("status_page", page_slug=demo_status_slug)
+
+    return render_template(
+        "beta.html",
+        feedback_url=feedback_url,
+        demo_status_url=demo_status_url,
+    )
 
 
 @app.route("/add", methods=["GET", "POST"])
