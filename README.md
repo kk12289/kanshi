@@ -12,7 +12,7 @@ kanshiは、日本語UIのシンプルなURL監視SaaS MVPです。登録したU
 - インシデント履歴
 - 障害報告文テンプレートのコピー
 - Discord Webhook通知
-- SMTPメール通知
+- Resend API / SMTPメール通知
 - SQLite / PostgreSQL対応
 
 Discord通知とメール通知はどちらも任意です。両方を設定することも、どちらも設定せずに監視だけ行うこともできます。
@@ -75,6 +75,8 @@ DATABASE_SSLMODE=
 FLASK_DEBUG=0
 SCHEDULER_ENABLED=1
 ALLOW_PRIVATE_URLS=0
+RESEND_API_KEY=
+RESEND_FROM=kanshi <onboarding@resend.dev>
 SMTP_HOST=
 SMTP_PORT=587
 SMTP_USER=
@@ -93,9 +95,13 @@ SMTP_FROM=
 - `FLASK_DEBUG`: 本番では `0` にしてください。未設定時も `0` 扱いです。
 - `SCHEDULER_ENABLED`: `1` ならAPSchedulerを起動します。WebとWorkerを分ける場合は制御に使えます。
 - `ALLOW_PRIVATE_URLS`: `1` の場合のみlocalhostやprivate IPの監視URLを許可します。本番では `0` 推奨です。
+- `RESEND_API_KEY`: Resend APIでメール通知を送るためのAPIキーです。
+- `RESEND_FROM`: Resendで使う送信元メールアドレスです。例: `kanshi <onboarding@resend.dev>` または verified domain のメールアドレス。
 - `SMTP_HOST`, `SMTP_PORT`, `SMTP_USER`, `SMTP_PASSWORD`, `SMTP_FROM`: メール通知用SMTP設定です。
 
-メール送信はSTARTTLS前提です。`SMTP_PORT=587` を推奨します。SSL直接接続の `465` は現在未対応です。
+`RESEND_API_KEY` と `RESEND_FROM` が設定されている場合、メール通知はResend APIを優先します。Resendが未設定の場合のみSMTPを使います。
+
+SMTP送信はSTARTTLS前提です。`SMTP_PORT=587` を推奨します。SSL直接接続の `465` は現在未対応です。
 
 Renderなどで `postgres://...` が渡される場合も、アプリ側で `postgresql://...` に変換します。
 
@@ -182,6 +188,8 @@ DATABASE_SSLMODE=
 FLASK_DEBUG=0
 SCHEDULER_ENABLED=1
 ALLOW_PRIVATE_URLS=0
+RESEND_API_KEY=
+RESEND_FROM=
 SMTP_HOST=
 SMTP_PORT=587
 SMTP_USER=
@@ -237,7 +245,25 @@ Discord Webhook URLが空欄の場合、Discord通知は送信されません。
 
 ## メール通知の設定方法
 
-メール通知を使う場合はSMTP設定を環境変数に入れてください。
+Render Free Web Serviceでは、SMTPポート `25 / 465 / 587` への外向き通信がブロックされる場合があります。そのため、Render Freeでメール通知を使う場合はResend APIを推奨します。
+
+### Resend APIを使う場合
+
+ResendでAPIキーを作成し、RenderのEnvironment Variablesに設定します。
+
+```env
+RESEND_API_KEY=re_xxxxxxxxx
+RESEND_FROM=kanshi <onboarding@resend.dev>
+```
+
+- `RESEND_API_KEY`: ResendのAPIキーです。
+- `RESEND_FROM`: 送信元メールアドレスです。テストでは `kanshi <onboarding@resend.dev>`、本番ではResendで認証済みの独自ドメインのメールアドレスを推奨します。
+
+`RESEND_API_KEY` と `RESEND_FROM` が設定されている場合、kanshiはResend APIを優先してメール送信します。
+
+### SMTPを使う場合
+
+SMTPはローカル開発、VPS、有料環境などSMTPポートへ接続できる環境向けとして残しています。Resend設定がない場合のみSMTPを使います。
 
 ```env
 SMTP_HOST=smtp.example.com
