@@ -79,20 +79,12 @@
           <a href="{{ demo_status_url }}" class="soft-button inline-flex items-center justify-center rounded-md bg-slate-950 px-5 py-3 text-sm font-semibold text-white shadow-lg shadow-slate-900/10 hover:bg-slate-800">デモのステータスページを見る</a>
         {% endif %}
         {% if feedback_url %}
-          <a href="{{ feedback_url }}" class="soft-button inline-flex items-center justify-center rounded-md border border-slate-300 bg-white px-5 py-3 text-sm font-semibold text-slate-800 hover:bg-slate-50">{{ feedback_label }}</a>
+          <a href="{{ feedback_url }}" target="_blank" rel="noopener" class="soft-button inline-flex items-center justify-center rounded-md border border-slate-300 bg-white px-5 py-3 text-sm font-semibold text-slate-800 hover:bg-slate-50">{{ feedback_label }}</a>
         {% else %}
           <span class="inline-flex items-center justify-center rounded-md border border-slate-200 bg-slate-100 px-5 py-3 text-sm font-semibold text-slate-500">{{ feedback_label }}</span>
         {% endif %}
       </div>
       <p class="mt-3 text-sm leading-6 text-slate-500">実際の公開ページと通知の流れを確認できます。</p>
-      {% if contact_email and not has_feedback_form %}
-        <div class="mt-4 flex flex-col gap-2 text-sm text-slate-500 sm:flex-row sm:items-center">
-          <span>メールアプリが開かない場合:</span>
-          <input id="hero-feedback-email" class="w-full rounded-md border border-slate-200 bg-white px-3 py-2 font-mono text-slate-700 sm:w-auto" value="{{ contact_email }}" readonly>
-          <button type="button" data-copy-target="hero-feedback-email" class="soft-button inline-flex items-center justify-center rounded-md border border-slate-300 bg-white px-3 py-2 text-sm font-medium text-slate-700 hover:bg-slate-50">メールアドレスをコピー</button>
-          <span class="copy-result text-slate-500" aria-live="polite"></span>
-        </div>
-      {% endif %}
     </div>
 
     <div class="fade-up-delay space-y-4">
@@ -211,68 +203,12 @@
       </div>
       <div class="mt-6 flex flex-col gap-3 sm:flex-row">
         {% if feedback_url %}
-          <a href="{{ feedback_url }}" class="soft-button inline-flex items-center justify-center rounded-md bg-slate-950 px-5 py-3 text-sm font-semibold text-white hover:bg-slate-800">{{ feedback_label }}</a>
+          <a href="{{ feedback_url }}" target="_blank" rel="noopener" class="soft-button inline-flex items-center justify-center rounded-md bg-slate-950 px-5 py-3 text-sm font-semibold text-white hover:bg-slate-800">{{ feedback_label }}</a>
         {% else %}
           <span class="inline-flex items-center justify-center rounded-md border border-slate-200 bg-slate-100 px-5 py-3 text-sm font-semibold text-slate-500">{{ feedback_label }}</span>
         {% endif %}
       </div>
-      {% if contact_email and not has_feedback_form %}
-        <div class="mt-4 flex flex-col gap-2 text-sm text-slate-500 sm:flex-row sm:items-center">
-          <span>メールアプリが開かない場合:</span>
-          <input id="footer-feedback-email" class="w-full rounded-md border border-slate-200 bg-white px-3 py-2 font-mono text-slate-700 sm:w-auto" value="{{ contact_email }}" readonly>
-          <button type="button" data-copy-target="footer-feedback-email" class="soft-button inline-flex items-center justify-center rounded-md border border-slate-300 bg-white px-3 py-2 text-sm font-medium text-slate-700 hover:bg-slate-50">メールアドレスをコピー</button>
-          <span class="copy-result text-slate-500" aria-live="polite"></span>
-        </div>
-      {% endif %}
     </div>
   </section>
 </div>
-
-<script>
-  (function () {
-    async function copyText(text) {
-      if (navigator.clipboard && window.isSecureContext) {
-        await navigator.clipboard.writeText(text);
-        return;
-      }
-
-      var textarea = document.createElement("textarea");
-      textarea.value = text;
-      textarea.setAttribute("readonly", "");
-      textarea.style.position = "fixed";
-      textarea.style.opacity = "0";
-      document.body.appendChild(textarea);
-      textarea.select();
-      var copied = document.execCommand("copy");
-      document.body.removeChild(textarea);
-
-      if (!copied) {
-        throw new Error("copy failed");
-      }
-    }
-
-    document.querySelectorAll("[data-copy-target]").forEach(function (button) {
-      button.addEventListener("click", async function () {
-        var target = document.getElementById(button.getAttribute("data-copy-target"));
-        var result = button.parentElement.querySelector(".copy-result");
-        if (!target) {
-          return;
-        }
-
-        try {
-          await copyText(target.value);
-          if (result) {
-            result.textContent = "コピーしました";
-          }
-        } catch (error) {
-          if (result) {
-            result.textContent = "コピーできませんでした。手動で選択してコピーしてください。";
-          }
-          target.focus();
-          target.select();
-        }
-      });
-    });
-  })();
-</script>
 {% endblock %}

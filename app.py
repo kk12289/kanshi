@@ -272,18 +272,14 @@ def index():
 
 @app.route("/beta")
 def beta_page():
-    feedback_form_url = os.environ.get("FEEDBACK_FORM_URL")
-    contact_email = os.environ.get("CONTACT_EMAIL")
+    feedback_form_url = os.environ.get("GOOGLE_FORM_URL") or os.environ.get("FEEDBACK_FORM_URL")
     demo_status_slug = os.environ.get("DEMO_STATUS_SLUG")
 
     feedback_url = None
     feedback_label = "フィードバック受付準備中"
     if feedback_form_url:
         feedback_url = feedback_form_url
-        feedback_label = "フィードバックを送る"
-    elif contact_email:
-        feedback_url = f"mailto:{contact_email}"
-        feedback_label = "メールで意見を送る"
+        feedback_label = "フォームで意見を送る（1分）"
 
     demo_status_url = None
     if demo_status_slug:
@@ -293,8 +289,6 @@ def beta_page():
         "beta.html",
         feedback_url=feedback_url,
         feedback_label=feedback_label,
-        contact_email=contact_email,
-        has_feedback_form=bool(feedback_form_url),
         demo_status_url=demo_status_url,
     )
 
