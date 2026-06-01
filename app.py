@@ -293,6 +293,8 @@ def beta_page():
         "beta.html",
         feedback_url=feedback_url,
         feedback_label=feedback_label,
+        contact_email=contact_email,
+        has_feedback_form=bool(feedback_form_url),
         demo_status_url=demo_status_url,
     )
 
