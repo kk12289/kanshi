@@ -70,6 +70,7 @@ SECRET_KEY=change-me
 ADMIN_USERNAME=admin
 ADMIN_PASSWORD=
 BASE_URL=http://127.0.0.1:5000
+GOOGLE_FORM_URL=
 FEEDBACK_FORM_URL=
 CONTACT_EMAIL=
 DEMO_STATUS_SLUG=
@@ -93,8 +94,9 @@ SMTP_FROM=
 - `ADMIN_USERNAME`: 管理画面Basic認証のユーザー名です。未設定時は `admin` です。
 - `ADMIN_PASSWORD`: 管理画面Basic認証のパスワードです。設定した場合、管理画面に認証がかかります。
 - `BASE_URL`: 通知内の公開ステータスページURLに使います。例: `https://kanshi.example.com`
-- `FEEDBACK_FORM_URL`: `/beta` の「フィードバックを送る」ボタンのリンク先です。Googleフォームなどを指定できます。
-- `CONTACT_EMAIL`: `FEEDBACK_FORM_URL` が未設定の場合、`mailto:{CONTACT_EMAIL}` としてフィードバック導線に使います。
+- `GOOGLE_FORM_URL`: `/beta` の「フォームで意見を送る（1分）」ボタンのリンク先です。Googleフォームを指定します。
+- `FEEDBACK_FORM_URL`: `GOOGLE_FORM_URL` が未設定の場合の予備リンクです。
+- `CONTACT_EMAIL`: 連絡先メモ用です。現在の `/beta` では `mailto:` 導線には使いません。
 - `DEMO_STATUS_SLUG`: `/beta` の「デモ用ステータスページを見る」ボタンで開く `/status/{slug}` のslugです。
 - `DATABASE_URL`: 本番DB接続URL。未設定なら `sqlite:///kanshi.db` を使います。
 - `DATABASE_SSLMODE`: 必要な場合だけPostgreSQL接続のSSLモードを指定します。RenderのExternal Database URLを使う場合は `require` を試してください。Internal Database URLでは通常は空欄でOKです。
@@ -189,6 +191,7 @@ SECRET_KEY=本番用の長いランダム文字列
 ADMIN_USERNAME=admin
 ADMIN_PASSWORD=管理画面用の長いパスワード
 BASE_URL=https://your-kanshi.onrender.com
+GOOGLE_FORM_URL=
 FEEDBACK_FORM_URL=
 CONTACT_EMAIL=
 DEMO_STATUS_SLUG=
@@ -244,50 +247,80 @@ https://your-kanshi.onrender.com/beta
 
 フィードバック導線は環境変数で切り替えます。
 
-- `FEEDBACK_FORM_URL` が設定されている場合: 「フィードバックを送る」ボタンのリンク先になります。
-- `FEEDBACK_FORM_URL` が未設定で `CONTACT_EMAIL` が設定されている場合: `mailto:{CONTACT_EMAIL}` を使います。
+- `GOOGLE_FORM_URL` が設定されている場合: 「フォームで意見を送る（1分）」ボタンのリンク先になります。
+- `GOOGLE_FORM_URL` が未設定で `FEEDBACK_FORM_URL` が設定されている場合: 予備のフォームリンクとして使います。
 - どちらも未設定の場合: フィードバックボタンは「準備中」と表示されます。
 
 デモ用ステータスページへのリンクは `DEMO_STATUS_SLUG` で指定します。例えば `DEMO_STATUS_SLUG=demo` の場合、`/status/demo` へリンクします。未設定の場合、「デモ用ステータスページを見る」ボタンは表示されません。
 
+Googleフォームは、最初は次の質問に絞ると回答してもらいやすくなります。
+
+- kanshiは使えそうですか？: 使えそう / 使わなさそう / 判断できない
+- どの用途なら近いですか？: WordPress保守 / ホームページ更新代行 / Web制作 / 個人開発 / その他
+- 足りないもの・気になった点はありますか？: 自由記述
+
 ## フィードバック依頼用メッセージ
 
-外部のWeb制作者や個人開発者に意見をもらうときは、次の文面をベースにできます。
+外部のWordPress保守・月額保守・更新代行の事業者に意見をもらうときは、次の文面をベースにできます。
 
 ```text
 突然のご連絡失礼します。
 
-現在、個人開発で「kanshi」という日本語のURL監視ツールを作っています。
+個人開発で「kanshi」という、日本語向けのURL監視ツールを作っています。
 
-サイトが落ちたときにメール/Discordで通知し、顧客向けの公開ステータスページも自動で作れるツールです。
-障害時にそのまま貼れる日本語のお知らせ文をコピーできる機能も入れています。
+WordPress保守やホームページ運用の現場で、
+「顧客サイトが落ちていたことに後から気づく」
+「障害時に顧客へどう説明するか迷う」
+ような場面があるのか知りたく、ご連絡しました。
 
-Web制作者・個人開発者の方から見て、こういうツールに需要がありそうか率直に伺いたくご連絡しました。
+kanshiでは、サイトが落ちたときにメール/Discordへ通知し、
+顧客に見せられる公開ステータスページや、
+障害時にそのまま貼れる日本語のお知らせ文を用意できます。
 
-デモページはこちらです。
+β版ページはこちらです。
 https://kanshi-eftn.onrender.com/beta
 
-売り込みではなく、「あり・なし」だけでもご意見いただけると助かります。
+もし可能でしたら、
+「保守業務で使えそう」
+「今の内容だと使わなさそう」
+のどちらかだけでも教えていただけると助かります。
+
+よろしくお願いいたします。
 ```
 
 ## 最初に見せる相手
 
 優先して見せる相手:
 
-- Web制作フリーランス
-- 小規模制作会社
-- WordPress保守をしている人
-- 個人開発者
-- 自分のWebサービスやポートフォリオサイトを持っている人
+- WordPress保守を月額で提供している人
+- ホームページ保守・管理代行をしている小規模事業者
+- ホームページ更新代行をしている人
+- WordPress復旧・トラブル対応をしている人
+- 複数のクライアントサイトを継続管理しているWeb制作フリーランス
+
+後回しでよい相手:
+
+- 制作だけが中心で、保守・運用の記載がない人
+- マーケティング会社・広告代理店系
+- 大規模な制作会社
+- ガチのインフラ/SRE向けサービスをすでに使っていそうな層
 
 検索キーワード例:
 
-- 千葉 Web制作 フリーランス
-- ホームページ制作 個人事業主
+- WordPress 保守 月額 個人
 - WordPress 保守 フリーランス
-- 個人開発 Webサービス
-- 個人開発 Render
-- 個人開発 Vercel
+- WordPress 更新代行 月額
+- ホームページ 保守 管理 フリーランス
+- ホームページ 更新代行 個人
+- WordPress 復旧 保守
+- 小規模事業者 ホームページ 保守
+- Web担当者代行 ホームページ
+
+送信後の運用:
+
+- 同じ相手への追いメールはしません。
+- まずは3〜5営業日待ちます。
+- 次に送る場合は、月額保守・WordPress保守・更新代行に絞って5〜10件だけ送ります。
 
 ## 監視URLを追加する
 
