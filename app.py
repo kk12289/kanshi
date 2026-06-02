@@ -276,10 +276,10 @@ def beta_page():
     demo_status_slug = os.environ.get("DEMO_STATUS_SLUG")
 
     feedback_url = None
-    feedback_label = "フィードバック受付準備中"
+    feedback_label = "デモ監視リクエスト準備中"
     if feedback_form_url:
         feedback_url = feedback_form_url
-        feedback_label = "フォームで意見を送る（1分）"
+        feedback_label = "URLを送ってデモ監視を試す"
 
     demo_status_url = None
     if demo_status_slug:
