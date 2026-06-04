@@ -44,12 +44,14 @@ def check_monitor(monitor):
     previous_status = previous.status if previous else None
     checked_at = now_jst()
     response_time_ms = None
+    failure_reason = None
     notification = None
 
     try:
         if not is_monitor_url_allowed(monitor.url):
             logger.warning("Monitor URL blocked by SSRF protection: %s", monitor.url)
             status = "DOWN"
+            failure_reason = "取得失敗"
             raise RuntimeError("blocked private monitor URL")
         started = time.perf_counter()
         response = requests.get(
@@ -60,9 +62,20 @@ def check_monitor(monitor):
         )
         response_time_ms = int((time.perf_counter() - started) * 1000)
         status = "UP" if response.status_code == 200 else "DOWN"
+        if status == "DOWN":
+            failure_reason = f"HTTP {response.status_code} を検知"
+    except requests.Timeout as exc:
+        logger.info("Monitor check timed out for %s: %s", monitor.url, exc)
+        status = "DOWN"
+        failure_reason = "タイムアウト"
+    except requests.ConnectionError as exc:
+        logger.info("Monitor connection failed for %s: %s", monitor.url, exc)
+        status = "DOWN"
+        failure_reason = "接続できませんでした"
     except requests.RequestException as exc:
         logger.info("Monitor check failed for %s: %s", monitor.url, exc)
         status = "DOWN"
+        failure_reason = "取得失敗"
     except RuntimeError as exc:
         logger.info("Monitor check skipped for %s: %s", monitor.url, exc)
 
@@ -71,6 +84,7 @@ def check_monitor(monitor):
             monitor_id=monitor.id,
             status=status,
             response_time_ms=response_time_ms,
+            failure_reason=failure_reason,
             checked_at=checked_at,
         )
     )

@@ -57,6 +57,7 @@ class CheckResult(db.Model):
     monitor_id = db.Column(db.Integer, db.ForeignKey("monitor.id"), nullable=False, index=True)
     status = db.Column(db.String(20), nullable=False)
     response_time_ms = db.Column(db.Integer, nullable=True)
+    failure_reason = db.Column(db.String(120), nullable=True)
     checked_at = db.Column(db.DateTime(timezone=True), default=now_jst, nullable=False, index=True)
 
 

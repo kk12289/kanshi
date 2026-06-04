@@ -1,223 +1,181 @@
 {% extends "public_base.html" %}
-{% block title %}kanshi β | 日本語URL監視ツール{% endblock %}
+{% block title %}kanshi β | Web保守向けURL監視{% endblock %}
 {% block header_name %}kanshi β{% endblock %}
 {% block content %}
 <style>
   .beta-page {
     margin: -2rem -1rem 0;
     padding: 0 1rem 2rem;
-    background:
-      radial-gradient(circle at 82% 8%, rgba(56, 189, 248, 0.16), transparent 28rem),
-      radial-gradient(circle at 12% 20%, rgba(34, 197, 94, 0.10), transparent 24rem),
-      linear-gradient(180deg, #f8fafc 0%, #ffffff 48%, #f8fafc 100%);
+    background: linear-gradient(180deg, #f8fafc 0%, #ffffff 42%, #f8fafc 100%);
   }
 
-  .fade-up {
-    animation: fadeUp 560ms ease-out both;
-  }
-
-  .fade-up-delay {
-    animation: fadeUp 720ms ease-out 140ms both;
-  }
-
-  .soft-card {
-    box-shadow: 0 18px 48px rgba(15, 23, 42, 0.08);
-    transition: transform 180ms ease, box-shadow 180ms ease, border-color 180ms ease;
-  }
-
-  .soft-card:hover {
-    border-color: rgba(15, 23, 42, 0.16);
-    box-shadow: 0 22px 58px rgba(15, 23, 42, 0.11);
-    transform: translateY(-3px);
-  }
-
-  .soft-button {
-    transition: transform 160ms ease, background-color 160ms ease, box-shadow 160ms ease;
-  }
-
-  .soft-button:hover {
-    transform: translateY(-1px);
-  }
-
-  @keyframes fadeUp {
-    from {
-      opacity: 0;
-      transform: translateY(14px);
-    }
-    to {
-      opacity: 1;
-      transform: translateY(0);
-    }
-  }
-
-  @media (prefers-reduced-motion: reduce) {
-    .fade-up,
-    .fade-up-delay {
-      animation: none;
-    }
-
-    .soft-card,
-    .soft-button {
-      transition: none;
-    }
-
-    .soft-card:hover,
-    .soft-button:hover {
-      transform: none;
-    }
+  .quiet-card {
+    box-shadow: 0 12px 32px rgba(15, 23, 42, 0.05);
   }
 </style>
 
 <div class="beta-page">
-  <section class="mx-auto grid max-w-5xl gap-10 py-12 sm:py-16 lg:grid-cols-[1.04fr_0.96fr] lg:items-center">
-    <div class="fade-up">
-      <span class="inline-flex rounded-full border border-emerald-200 bg-emerald-50 px-3 py-1 text-xs font-semibold text-emerald-700">β版デモ受付中</span>
-      <h1 class="mt-5 text-4xl font-semibold leading-tight tracking-tight text-slate-950 sm:text-5xl">サイトの異常に、ちゃんと気づけるように。</h1>
-      <p class="mt-5 max-w-2xl text-base leading-8 text-slate-600 sm:text-lg">kanshiは、Webサイトや小さなサービスの異常をメール/Discordで知らせる日本語のURL監視ツールです。公開ステータスページと障害時のお知らせ文も、すぐに用意できます。</p>
+  <section class="mx-auto grid max-w-5xl gap-10 py-12 sm:py-16 lg:grid-cols-[1.02fr_0.98fr] lg:items-center">
+    <div>
+      <span class="inline-flex rounded-full border border-slate-200 bg-white px-3 py-1 text-xs font-semibold text-slate-600">Web制作・WordPress保守向け β版</span>
+      <h1 class="mt-5 text-4xl font-semibold leading-tight tracking-tight text-slate-950 sm:text-5xl">クライアントに言われる前に、サイト異常に気づける。</h1>
+      <p class="mt-5 max-w-2xl text-base leading-8 text-slate-600 sm:text-lg">
+        kanshiは、Web制作・WordPress保守をしている人向けの監視ツールです。クライアントサイトの異常を検知し、顧客向けステータスページや第一報・復旧報告文の作成までサポートします。
+      </p>
       <div class="mt-8 flex flex-col gap-3 sm:flex-row">
-        {% if demo_status_url %}
-          <a href="{{ demo_status_url }}" class="soft-button inline-flex items-center justify-center rounded-md bg-slate-950 px-5 py-3 text-sm font-semibold text-white shadow-lg shadow-slate-900/10 hover:bg-slate-800">デモのステータスページを見る</a>
-        {% endif %}
         {% if feedback_url %}
-          <a href="{{ feedback_url }}" target="_blank" rel="noopener" class="soft-button inline-flex items-center justify-center rounded-md border border-slate-300 bg-white px-5 py-3 text-sm font-semibold text-slate-800 hover:bg-slate-50">{{ feedback_label }}</a>
+          <a href="{{ feedback_url }}" target="_blank" rel="noopener" class="inline-flex items-center justify-center rounded-md bg-slate-950 px-5 py-3 text-sm font-semibold text-white hover:bg-slate-800">1サイトだけデモ監視を試す</a>
         {% else %}
           <span class="inline-flex items-center justify-center rounded-md border border-slate-200 bg-slate-100 px-5 py-3 text-sm font-semibold text-slate-500">{{ feedback_label }}</span>
         {% endif %}
+        {% if demo_status_url %}
+          <a href="{{ demo_status_url }}" class="inline-flex items-center justify-center rounded-md border border-slate-300 bg-white px-5 py-3 text-sm font-semibold text-slate-800 hover:bg-slate-50">デモのステータスページを見る</a>
+        {% endif %}
       </div>
-      <p class="mt-3 text-sm leading-6 text-slate-500">試してみたいURLを送るだけで、デモ用のステータスページをお返しします。</p>
+      <p class="mt-3 text-sm leading-6 text-slate-500">
+        監視したいURLを送っていただければ、こちらでデモ監視を作成し、ステータスページURLをお返しします。まずは「保守業務で使えそうか」の確認だけでも大丈夫です。
+      </p>
     </div>
 
-    <div class="fade-up-delay space-y-6">
-      <article class="soft-card rounded-lg border border-slate-200 bg-white/90 p-6 backdrop-blur">
-        <div class="flex items-start justify-between gap-4">
-          <div>
-            <p class="text-xs font-semibold uppercase tracking-wider text-slate-400">現在の状態</p>
-            <p class="mt-3 text-lg font-semibold text-emerald-700">🟢 正常稼働中</p>
+    <div class="quiet-card rounded-lg border border-slate-200 bg-white p-6">
+      <p class="text-sm font-semibold text-slate-950">保守担当者の画面イメージ</p>
+      <div class="mt-5 space-y-4">
+        <div class="rounded-lg border border-slate-200 bg-slate-50 p-4">
+          <div class="flex items-center justify-between gap-4">
+            <div>
+              <p class="text-xs font-medium text-slate-500">クライアントサイト</p>
+              <p class="mt-1 font-semibold text-slate-950">制作会社サンプルサイト</p>
+            </div>
+            <span class="rounded-full bg-green-100 px-3 py-1 text-xs font-semibold text-green-800">正常</span>
           </div>
-          <div class="rounded-md bg-emerald-50 px-3 py-2 text-right">
-            <p class="text-xs text-slate-500">過去30日間</p>
-            <p class="text-lg font-semibold text-slate-950">99.98%</p>
-          </div>
+          <p class="mt-3 text-sm leading-6 text-slate-600">最終更新 10:28 / 過去30日間の稼働率 99.98%</p>
         </div>
-      </article>
-
-      <article class="soft-card rounded-lg border border-slate-200 bg-white/95 p-6 backdrop-blur">
-        <div class="flex items-center justify-between gap-3">
-          <p class="text-sm font-semibold text-slate-950">障害時のお知らせ文</p>
-          <button type="button" class="rounded-md border border-slate-200 px-3 py-1.5 text-xs font-medium text-slate-600">コピー</button>
+        <div class="rounded-lg border border-red-200 bg-red-50 p-4">
+          <p class="text-sm font-semibold text-red-900">第一報文</p>
+          <p class="mt-3 text-sm leading-7 text-red-900">現在、〇〇サイトにてアクセスしづらい状態を確認しています。原因を確認中です。状況が分かり次第、改めてご連絡いたします。</p>
         </div>
-        <p class="mt-4 text-sm leading-7 text-slate-600">現在、サービスにアクセスしにくい状況が発生しています。<br>原因を調査中です。復旧まで今しばらくお待ちください。</p>
-      </article>
-    </div>
-  </section>
-
-  <section class="mx-auto max-w-5xl py-8">
-    <div class="max-w-2xl">
-      <h2 class="text-2xl font-semibold tracking-tight text-slate-950">Web制作者・個人開発者向けのURL監視ツールです</h2>
-      <p class="mt-4 text-sm leading-7 text-slate-600">「サイト、落ちてたかも」にあとから気づかないために。クライアントに聞かれる前に、まず自分が気づける状態を作ります。</p>
-    </div>
-  </section>
-
-  <section class="mx-auto max-w-5xl py-8">
-    <div class="rounded-lg border border-slate-200 bg-white p-6 shadow-sm sm:p-8">
-      <span class="inline-flex rounded-full border border-slate-200 bg-slate-50 px-3 py-1 text-xs font-semibold text-slate-500">デモで確認できます</span>
-      <h2 class="mt-4 text-2xl font-semibold tracking-tight text-slate-950">まずは実際の見え方を見てください。</h2>
-      <p class="mt-4 text-sm leading-7 text-slate-600">公開ステータスページ、障害時のお知らせ文、稼働率の表示など、クライアントや利用者に共有する画面のイメージを確認できます。</p>
-      <div class="mt-5 grid gap-3 text-sm text-slate-700 sm:grid-cols-3">
-        <div class="rounded-md border border-slate-200 bg-slate-50 px-4 py-3">公開ページの見え方</div>
-        <div class="rounded-md border border-slate-200 bg-slate-50 px-4 py-3">障害時のお知らせ文</div>
-        <div class="rounded-md border border-slate-200 bg-slate-50 px-4 py-3">復旧後の履歴表示</div>
+        <div class="rounded-lg border border-slate-200 bg-white p-4">
+          <p class="text-sm font-semibold text-slate-950">聞きたいこと</p>
+          <ul class="mt-3 space-y-2 text-sm leading-6 text-slate-600">
+            <li>クライアントサイトの異常には、普段どのように気づいていますか？</li>
+            <li>障害時の第一報や状況説明は、どのように行っていますか？</li>
+          </ul>
+        </div>
       </div>
-      {% if demo_status_url %}
-        <div class="mt-6">
-          <a href="{{ demo_status_url }}" class="soft-button inline-flex items-center justify-center rounded-md bg-slate-950 px-5 py-3 text-sm font-semibold text-white hover:bg-slate-800">デモのステータスページを見る</a>
-        </div>
-      {% endif %}
     </div>
   </section>
 
   <section class="mx-auto max-w-5xl py-8">
-    <h2 class="text-xl font-semibold tracking-tight text-slate-950">できること</h2>
+    <div class="max-w-3xl">
+      <h2 class="text-2xl font-semibold tracking-tight text-slate-950">サイトが「UP」でも、保守担当者が安心できるとは限りません。</h2>
+      <p class="mt-4 text-sm leading-7 text-slate-600">
+        監視ツールで200 OKが返っていても、実際にはフォームが壊れていたり、重要ページだけ表示が崩れていたりすることがあります。kanshiはまず、保守担当者が異常に気づき、落ち着いて顧客に説明するところを支えます。
+      </p>
+    </div>
+    <div class="mt-6 grid gap-3 text-sm leading-7 text-slate-700 md:grid-cols-2">
+      <div class="rounded-lg border border-slate-200 bg-white p-4">通知が来ても、メールに埋もれて見落としてしまう</div>
+      <div class="rounded-lg border border-slate-200 bg-white p-4">サイトは開けても、フォームや重要ページが壊れている</div>
+      <div class="rounded-lg border border-slate-200 bg-white p-4">クライアントから言われて初めて異常に気づく</div>
+      <div class="rounded-lg border border-slate-200 bg-white p-4">原因不明の段階で、第一報に迷う</div>
+      <div class="rounded-lg border border-slate-200 bg-white p-4 md:col-span-2">復旧後の説明文を毎回考えるのが負担</div>
+    </div>
+  </section>
+
+  <section class="mx-auto max-w-5xl py-8">
+    <h2 class="text-2xl font-semibold tracking-tight text-slate-950">保守業務の流れに合わせて使えます</h2>
     <div class="mt-5 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
-      <article class="soft-card rounded-lg border border-slate-200 bg-white p-5">
-        <div class="text-2xl">🔍</div>
-        <h3 class="mt-4 font-semibold text-slate-950">URL監視</h3>
-        <p class="mt-3 text-sm leading-7 text-slate-600">登録したURLを定期的にチェック。応答しない場合はDOWNとして記録します。</p>
+      <article class="quiet-card rounded-lg border border-slate-200 bg-white p-5">
+        <p class="text-xs font-semibold text-slate-500">気づく</p>
+        <h3 class="mt-3 font-semibold text-slate-950">クライアントサイトの異常に早く気づく</h3>
+        <p class="mt-3 text-sm leading-7 text-slate-600">登録したURLを定期的に確認し、応答しない場合はDOWNとして記録します。</p>
       </article>
-      <article class="soft-card rounded-lg border border-slate-200 bg-white p-5">
-        <div class="text-2xl">📩</div>
-        <h3 class="mt-4 font-semibold text-slate-950">メール/Discord通知</h3>
-        <p class="mt-3 text-sm leading-7 text-slate-600">障害発生と復旧を、必要な相手にだけ通知します。</p>
+      <article class="quiet-card rounded-lg border border-slate-200 bg-white p-5">
+        <p class="text-xs font-semibold text-slate-500">受け取る</p>
+        <h3 class="mt-3 font-semibold text-slate-950">障害を見落とさないように通知する</h3>
+        <p class="mt-3 text-sm leading-7 text-slate-600">メールやDiscordで、障害発生と復旧を通知します。</p>
       </article>
-      <article class="soft-card rounded-lg border border-slate-200 bg-white p-5">
-        <div class="text-2xl">🟢</div>
-        <h3 class="mt-4 font-semibold text-slate-950">公開ステータスページ</h3>
-        <p class="mt-3 text-sm leading-7 text-slate-600">利用者やクライアントに見せられる状態確認ページを用意できます。</p>
+      <article class="quiet-card rounded-lg border border-slate-200 bg-white p-5">
+        <p class="text-xs font-semibold text-slate-500">共有する</p>
+        <h3 class="mt-3 font-semibold text-slate-950">顧客に現在状況を共有できる</h3>
+        <p class="mt-3 text-sm leading-7 text-slate-600">公開ステータスページで、現在の状態や過去のインシデントを伝えられます。</p>
       </article>
-      <article class="soft-card rounded-lg border border-slate-200 bg-white p-5">
-        <div class="text-2xl">📋</div>
-        <h3 class="mt-4 font-semibold text-slate-950">障害報告文コピー</h3>
-        <p class="mt-3 text-sm leading-7 text-slate-600">障害時にそのまま貼れる日本語のお知らせ文をすぐにコピーできます。</p>
+      <article class="quiet-card rounded-lg border border-slate-200 bg-white p-5">
+        <p class="text-xs font-semibold text-slate-500">伝える</p>
+        <h3 class="mt-3 font-semibold text-slate-950">第一報・復旧報告を迷わず送れる</h3>
+        <p class="mt-3 text-sm leading-7 text-slate-600">原因が分からない段階でも、そのまま使える自然な日本語文面を用意します。</p>
       </article>
     </div>
   </section>
 
-  <section class="mx-auto grid max-w-5xl gap-6 py-10 lg:grid-cols-[0.9fr_1.1fr] lg:items-start">
+  <section class="mx-auto grid max-w-5xl gap-6 py-8 lg:grid-cols-[0.95fr_1.05fr] lg:items-start">
     <div>
-      <h2 class="max-w-md text-2xl font-semibold leading-snug tracking-tight text-slate-950">Web制作者に、ちょうどいい監視を。</h2>
-      <p class="mt-4 text-sm leading-7 text-slate-600">クライアントサイトの保守で困るのは、障害そのものより“気づくのが遅れること”。kanshiは、納品後のサイトを軽く見守り、何かあったときにすぐ動ける状態を作ります。</p>
+      <h2 class="text-2xl font-semibold tracking-tight text-slate-950">こんな人に向けて検証しています</h2>
+      <p class="mt-4 text-sm leading-7 text-slate-600">
+        今は幅広い監視ツールではなく、クライアントサイトを預かる人の「気づく」「説明する」を軽くする方向に絞っています。
+      </p>
     </div>
-    <div class="grid gap-4 sm:grid-cols-2">
-      <article class="soft-card rounded-lg border border-slate-200 bg-white p-5">
-        <h3 class="font-semibold text-slate-950">クライアントサイトの簡易監視</h3>
-        <p class="mt-3 text-sm leading-7 text-slate-600">納品後のサイトが落ちていないか、軽く見守れます。</p>
-      </article>
-      <article class="soft-card rounded-lg border border-slate-200 bg-white p-5">
-        <h3 class="font-semibold text-slate-950">障害時の一次対応</h3>
-        <p class="mt-3 text-sm leading-7 text-slate-600">気づくのが早いほど、連絡も対応も落ち着いて進められます。</p>
-      </article>
-      <article class="soft-card rounded-lg border border-slate-200 bg-white p-5">
-        <h3 class="font-semibold text-slate-950">顧客向けの説明ページ</h3>
-        <p class="mt-3 text-sm leading-7 text-slate-600">公開ステータスページで、現在の状況をそのまま共有できます。</p>
-      </article>
-      <article class="soft-card rounded-lg border border-slate-200 bg-white p-5">
-        <h3 class="font-semibold text-slate-950">お知らせ文の作成補助</h3>
-        <p class="mt-3 text-sm leading-7 text-slate-600">障害時の一言も、すぐ用意できます。</p>
-      </article>
+    <div class="grid gap-3 sm:grid-cols-2">
+      {% for user in ["Web制作フリーランス", "WordPress保守業者", "ホームページ更新代行", "小規模事業者向けWeb制作会社", "複数のクライアントサイトを管理している人"] %}
+        <div class="rounded-lg border border-slate-200 bg-white px-4 py-4 text-sm font-semibold leading-6 text-slate-800">{{ user }}</div>
+      {% endfor %}
     </div>
-  </section>
-
-  <section class="mx-auto grid max-w-5xl gap-6 py-10 lg:grid-cols-[1.05fr_0.95fr] lg:items-center">
-    <div class="rounded-lg border border-slate-200 bg-white p-6 shadow-sm">
-      <h2 class="text-2xl font-semibold tracking-tight text-slate-950">個人開発にも、最低限の安心を。</h2>
-      <p class="mt-4 text-sm leading-7 text-slate-600">Render、Vercel、Railwayなどで公開している小さなサービスを、手軽に監視できます。まずは自分のサービスが落ちたことに気づけるだけでも十分です。</p>
-    </div>
-    <ul class="space-y-3 text-sm leading-7 text-slate-700">
-      <li class="soft-card rounded-lg border border-slate-200 bg-white px-5 py-3">自分のWebサービスが落ちたときに気づける</li>
-      <li class="soft-card rounded-lg border border-slate-200 bg-white px-5 py-3">公開ステータスページを共有できる</li>
-      <li class="soft-card rounded-lg border border-slate-200 bg-white px-5 py-3">障害時の告知文をすぐ作れる</li>
-      <li class="soft-card rounded-lg border border-slate-200 bg-white px-5 py-3">Discord通知で開発用チャンネルにも流せる</li>
-    </ul>
   </section>
 
   <section class="mx-auto max-w-5xl py-8">
-    <div class="rounded-lg border border-slate-200 bg-white/80 p-5 shadow-sm backdrop-blur">
+    <div class="rounded-lg border border-slate-200 bg-white p-6 sm:p-8">
+      <h2 class="text-2xl font-semibold tracking-tight text-slate-950">コピーできる文面の例</h2>
+      <p class="mt-3 text-sm leading-7 text-slate-600">原因がまだ分からない段階でも、まず状況を共有できる文面を用意します。</p>
+      <div class="mt-5 grid gap-4 lg:grid-cols-3">
+        <article class="rounded-lg border border-slate-200 bg-slate-50 p-4">
+          <h3 class="text-sm font-semibold text-slate-950">第一報</h3>
+          <p class="mt-3 text-sm leading-7 text-slate-600">現在、〇〇サイトにてアクセスしづらい状態を確認しています。原因を確認中です。状況が分かり次第、改めてご連絡いたします。</p>
+        </article>
+        <article class="rounded-lg border border-slate-200 bg-slate-50 p-4">
+          <h3 class="text-sm font-semibold text-slate-950">復旧報告</h3>
+          <p class="mt-3 text-sm leading-7 text-slate-600">〇〇サイトの表示不具合は、現在復旧していることを確認しました。ご不便をおかけし申し訳ありません。引き続き状況を確認いたします。</p>
+        </article>
+        <article class="rounded-lg border border-slate-200 bg-slate-50 p-4">
+          <h3 class="text-sm font-semibold text-slate-950">原因不明時</h3>
+          <p class="mt-3 text-sm leading-7 text-slate-600">現時点では原因を確認中です。サーバー・WordPress・プラグイン・ネットワークの可能性を含めて切り分けを行っています。</p>
+        </article>
+      </div>
+    </div>
+  </section>
+
+  <section class="mx-auto max-w-5xl py-8">
+    <div class="rounded-lg border border-slate-200 bg-white p-6 sm:p-8">
+      <h2 class="text-2xl font-semibold tracking-tight text-slate-950">保守現場の流れを聞かせてください</h2>
+      <p class="mt-4 text-sm leading-7 text-slate-600">
+        今聞きたいのは、機能の感想よりも実際の保守業務の流れです。短い回答だけでも、今後の方向性を決める材料になります。
+      </p>
+      <ol class="mt-5 space-y-3 text-sm leading-7 text-slate-700">
+        <li class="rounded-lg border border-slate-200 bg-slate-50 px-4 py-3">1. クライアントサイトの異常には、普段どのように気づいていますか？</li>
+        <li class="rounded-lg border border-slate-200 bg-slate-50 px-4 py-3">2. 障害時の第一報や状況説明は、どのように行っていますか？</li>
+        <li class="rounded-lg border border-slate-200 bg-slate-50 px-4 py-3">3. 「監視 + 顧客向けステータスページ + 第一報/復旧報告文コピー」は、保守業務で使えそうでしょうか？</li>
+      </ol>
+    </div>
+  </section>
+
+  <section class="mx-auto max-w-5xl py-8">
+    <div class="rounded-lg border border-slate-200 bg-white/90 p-5">
       <span class="inline-flex rounded-full border border-slate-200 bg-slate-50 px-3 py-1 text-xs font-semibold text-slate-500">β版</span>
       <h2 class="mt-4 text-sm font-semibold text-slate-950">小規模な検証・テスト用途を想定しています</h2>
-      <p class="mt-2 text-sm leading-7 text-slate-600">現在kanshiはβ版です。重要な本番監視ではなく、まずは小さなサービスや検証環境での利用を想定しています。</p>
+      <p class="mt-2 text-sm leading-7 text-slate-600">現在kanshiはβ版です。重要な本番監視ではなく、まずは小さなサイトや検証環境での利用を想定しています。</p>
       <p class="mt-2 text-xs leading-6 text-slate-500">デモ環境は無料ホスティング上で動いているため、初回表示に少し時間がかかる場合があります。</p>
     </div>
   </section>
 
   <section class="mx-auto max-w-5xl py-10">
-    <div class="rounded-lg border border-slate-200 bg-white p-6 shadow-sm sm:p-8">
+    <div class="rounded-lg border border-slate-200 bg-white p-6 sm:p-8">
       <div class="max-w-2xl">
-        <h2 class="text-2xl font-semibold tracking-tight text-slate-950">試してみたいURLを募集しています</h2>
-        <p class="mt-4 text-sm leading-7 text-slate-600">公開されているURLを送っていただければ、こちらでデモ用の監視と公開ステータスページを作成し、確認用URLをお返しします。</p>
+        <h2 class="text-2xl font-semibold tracking-tight text-slate-950">保守現場で使えそうか、1サイトだけ試せます</h2>
+        <p class="mt-4 text-sm leading-7 text-slate-600">
+          監視したいURLを送っていただければ、こちらでデモ監視を作成し、ステータスページURLをお返しします。フォームでは、普段の気づき方や顧客説明の流れも簡単に伺っています。
+        </p>
       </div>
       <div class="mt-6 flex flex-col gap-3 sm:flex-row">
         {% if feedback_url %}
-          <a href="{{ feedback_url }}" target="_blank" rel="noopener" class="soft-button inline-flex items-center justify-center rounded-md bg-slate-950 px-5 py-3 text-sm font-semibold text-white hover:bg-slate-800">{{ feedback_label }}</a>
+          <a href="{{ feedback_url }}" target="_blank" rel="noopener" class="inline-flex items-center justify-center rounded-md bg-slate-950 px-5 py-3 text-sm font-semibold text-white hover:bg-slate-800">監視したいURLを送る</a>
         {% else %}
           <span class="inline-flex items-center justify-center rounded-md border border-slate-200 bg-slate-100 px-5 py-3 text-sm font-semibold text-slate-500">{{ feedback_label }}</span>
         {% endif %}

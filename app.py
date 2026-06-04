@@ -183,6 +183,30 @@ def ensure_monitor_columns():
     db.session.commit()
 
 
+def ensure_check_result_columns():
+    inspector = inspect(db.engine)
+    if "check_result" not in inspector.get_table_names():
+        return
+
+    existing_columns = {column["name"] for column in inspector.get_columns("check_result")}
+    dialect = db.engine.dialect.name
+    add_column = "ADD COLUMN IF NOT EXISTS" if dialect == "postgresql" else "ADD COLUMN"
+    migrations = [
+        ("failure_reason", f"ALTER TABLE check_result {add_column} failure_reason VARCHAR(120)"),
+    ]
+
+    for column, statement in migrations:
+        if column not in existing_columns:
+            try:
+                db.session.execute(text(statement))
+            except (OperationalError, ProgrammingError) as exc:
+                db.session.rollback()
+                message = str(exc).lower()
+                if "duplicate column" not in message and "already exists" not in message:
+                    raise
+    db.session.commit()
+
+
 def uptime_percentage(monitor_id, since=None):
     query = CheckResult.query.filter_by(monitor_id=monitor_id)
     if since:
@@ -194,12 +218,24 @@ def uptime_percentage(monitor_id, since=None):
     return round((up / total) * 100, 2)
 
 
+def latest_check_detail(latest, status):
+    if not latest:
+        return ""
+    if status == "DOWN":
+        return latest.failure_reason or "取得失敗"
+    if latest.response_time_ms is not None:
+        return f"{latest.response_time_ms} ms"
+    return ""
+
+
 def incident_report(monitor):
     incident = monitor.open_incident
     if incident:
         return (
-            f"現在、{monitor.name}にアクセスしにくい状況が発生しています。\n"
-            "原因を調査中です。復旧まで今しばらくお待ちください。"
+            f"現在、{monitor.name}にアクセスしづらい状態を確認しています。\n"
+            "原因を確認しており、状況が分かり次第あらためてご連絡いたします。\n\n"
+            "現時点では原因を確認中です。\n"
+            "サーバー・WordPress・プラグイン・ネットワークの可能性を含めて切り分けを行っています。"
         )
 
     latest_resolved = (
@@ -209,9 +245,9 @@ def incident_report(monitor):
     )
     if latest_resolved:
         return (
-            f"本日 {latest_resolved.started_at.strftime('%H:%M')} 頃より発生していた障害は、"
-            f"{latest_resolved.resolved_at.strftime('%H:%M')} に復旧しました。\n"
-            "ご不便をおかけし、大変申し訳ございませんでした。"
+            f"{monitor.name}の表示不具合は、{latest_resolved.resolved_at.strftime('%H:%M')} 時点で復旧していることを確認しました。\n"
+            "ご不便をおかけし申し訳ありません。\n"
+            "引き続き状況を確認いたします。"
         )
     return ""
 
@@ -232,8 +268,10 @@ def monitor_view_model(monitor):
         "uptime_30d": uptime_percentage(monitor.id, now_jst() - timedelta(days=30)),
         "notification_label": " / ".join(notification_methods) if notification_methods else "通知なし",
         "outage_report": (
-            f"現在、{monitor.name}にアクセスしにくい状況が発生しています。\n"
-            "原因を調査中です。復旧まで今しばらくお待ちください。"
+            f"現在、{monitor.name}にアクセスしづらい状態を確認しています。\n"
+            "原因を確認しており、状況が分かり次第あらためてご連絡いたします。\n\n"
+            "現時点では原因を確認中です。\n"
+            "サーバー・WordPress・プラグイン・ネットワークの可能性を含めて切り分けを行っています。"
         ),
     }
 
@@ -279,7 +317,7 @@ def beta_page():
     feedback_label = "デモ監視リクエスト準備中"
     if feedback_form_url:
         feedback_url = feedback_form_url
-        feedback_label = "URLを送ってデモ監視を試す"
+        feedback_label = "監視したいURLを送る"
 
     demo_status_url = None
     if demo_status_slug:
@@ -423,6 +461,7 @@ def status_page(page_slug):
         uptime_30d=uptime_percentage(monitor.id, now_jst() - timedelta(days=30)),
         incidents=incidents,
         report_text="" if monitor.is_paused else incident_report(monitor),
+        latest_check_detail=latest_check_detail(latest, status),
     )
 
 
@@ -437,6 +476,7 @@ def should_start_scheduler():
 with app.app_context():
     db.create_all()
     ensure_monitor_columns()
+    ensure_check_result_columns()
 
 
 scheduler = None

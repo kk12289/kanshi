@@ -4,7 +4,7 @@
 <div class="mb-8 flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
   <div>
     <h1 class="text-2xl font-semibold tracking-tight">監視ダッシュボード</h1>
-    <p class="mt-2 text-sm text-slate-600">登録したURLの現在状態、応答時間、稼働率を確認できます。</p>
+    <p class="mt-2 text-sm text-slate-600">クライアントサイトの現在状態、応答時間、稼働率を確認できます。</p>
   </div>
 </div>
 
@@ -71,7 +71,7 @@
           <div class="flex flex-col gap-2">
             {% if item.status == "DOWN" %}
               <textarea id="copy-source-{{ monitor.id }}" class="hidden" readonly>{{ item.outage_report }}</textarea>
-              <button type="button" data-copy-target="copy-source-{{ monitor.id }}" class="copy-report rounded-md border border-red-200 bg-red-50 px-3 py-2 text-sm font-medium text-red-700 hover:bg-red-100">報告文をコピー</button>
+              <button type="button" data-copy-target="copy-source-{{ monitor.id }}" class="copy-report rounded-md border border-red-200 bg-red-50 px-3 py-2 text-sm font-medium text-red-700 hover:bg-red-100">第一報をコピー</button>
               <span class="copy-feedback hidden text-xs text-green-700" aria-live="polite"></span>
             {% endif %}
             <a href="{{ url_for('edit_monitor', monitor_id=monitor.id) }}" class="w-full rounded-md border border-slate-300 px-3 py-2 text-center text-sm text-slate-700 hover:bg-slate-50">編集</a>
