@@ -10,7 +10,7 @@ from flask import Flask, Response, abort, flash, redirect, render_template, requ
 from sqlalchemy import inspect, text
 from sqlalchemy.exc import OperationalError, ProgrammingError
 
-from models import CheckResult, Incident, Monitor, db, now_jst
+from models import CheckResult, Incident, Monitor, JST, db, now_jst
 from security import env_enabled, is_monitor_url_allowed
 from scheduler import start_scheduler
 
@@ -228,6 +228,21 @@ def latest_check_detail(latest, status):
     return ""
 
 
+def to_jst(dt):
+    if not dt:
+        return None
+    if dt.tzinfo is None:
+        return dt
+    return dt.astimezone(JST)
+
+
+def format_time_jst(dt):
+    converted = to_jst(dt)
+    if not converted:
+        return "-"
+    return converted.strftime("%H:%M")
+
+
 def incident_report(monitor):
     incident = monitor.open_incident
     if incident:
@@ -245,7 +260,7 @@ def incident_report(monitor):
     )
     if latest_resolved:
         return (
-            f"{monitor.name}の表示不具合は、{latest_resolved.resolved_at.strftime('%H:%M')} 時点で復旧していることを確認しました。\n"
+            f"{monitor.name}の表示不具合は、{format_time_jst(latest_resolved.resolved_at)} 時点で復旧していることを確認しました。\n"
             "ご不便をおかけし申し訳ありません。\n"
             "引き続き状況を確認いたします。"
         )
@@ -296,9 +311,10 @@ def dashboard_summary(items):
 
 @app.template_filter("jst")
 def jst_filter(dt):
-    if not dt:
+    converted = to_jst(dt)
+    if not converted:
         return "-"
-    return dt.strftime("%Y年%m月%d日 %H:%M")
+    return converted.strftime("%Y年%m月%d日 %H:%M")
 
 
 @app.route("/")
